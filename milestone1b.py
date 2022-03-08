@@ -40,26 +40,25 @@ def type_flow(flow,execution,activities):
                 log_file(flow+'.'+main_keys[i] + ' Exit')
     
     elif execution == 'Concurrent':
-        t,count = [],0
+        t,count,x = [],[],0
         for i in range(len(main_keys)):
+            log_file(flow+'.'+ main_keys[i] + ' Entry')
             parameters = list(activities[main_keys[i]].keys()) 
             if activities[main_keys[i]][parameters[0]] == 'Task':
                 temp = (threading.Thread(target=type_task,args=(flow + '.' + main_keys[i] + ' Executing',activities[main_keys[i]][parameters[1]],activities[main_keys[i]][parameters[2]])))
-                temp.start()
+                count.append(i)
                 t.append(temp)
-                
-                count += 1
-                if (i < len(main_keys)-1 and activities[main_keys[i+1]][parameters[0]] == 'Flow') or i == len(main_keys)-1:
-                    for j in range(0,count):
-                        log_file(flow+'.'+ main_keys[i] + ' Entry')
-                        t[j].start()
-                    for j in range(0,count):
-                        t[j].join()
-                        log_file(flow+'.'+main_keys[j] + ' Exit')
-                    t,count = [],0
             elif activities[main_keys[i]][parameters[0]] == 'Flow':
                 type_flow(flow+'.'+main_keys[i],activities[main_keys[i]][parameters[1]],activities[main_keys[i]][parameters[2]])
-                log_file(flow+'.'+main_keys[i] + ' Exit')        
+                log_file(flow+'.'+main_keys[i] + ' Exit')  
+            
+        for thread in t:
+            thread.start()
+        for thread in t:
+            thread.join()
+            log_file(flow+'.'+main_keys[count[x]] + ' Exit')
+            x += 1
+                  
       
 # Open the file and load the file
 with open(r"C:\Users\rpshr\Desktop\kla hackathon\Milestone1\Milestone1B.yaml") as f:
